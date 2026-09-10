@@ -11,7 +11,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 | 2 | Controlled Qwen inference gateway | DONE |
 | 3 | Coder workspace MVP | PARTIAL |
 | 4 | SRGE-branded portal | PARTIAL |
-| 5 | Resource control & fair-use | PENDING |
+| 5 | Resource control & fair-use | DONE |
 | 6 | Monitoring & admin visibility | PARTIAL |
 | 7 | Tailscale-only remote access | PARTIAL |
 | 8 | Administration, backup, recovery | PENDING |
@@ -92,6 +92,15 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - Repo: `OpencodeHost`. Branch `main` at `c4c14cf` ("Archive: OpenCode per-user runtime + SSE proxy approach (Phase 2/3)").
 - Untracked/modified: `deploy/coder-templates/`, `deploy/litellm/`, `deploy/postgres-init/`, `deploy/srge-dev.Dockerfile`, and modified `deploy/docker-compose.yml`.
 - No `git reset --hard` used; user changes preserved.
+
+## Phase 5 — Resource control & fair-use (DONE)
+- All 4 tier virtual keys now exist in LiteLLM (`LiteLLM_VerificationToken`):
+  - admin: rpm 60 / tpm 100000 / max_parallel 3
+  - researcher: rpm 30 / tpm 50000 / max_parallel 2 (unblocked)
+  - student: rpm 15 / tpm 20000 / max_parallel 1
+  - guest: rpm 5 / tpm 5000 / max_parallel 1
+- Rate-limit enforcement verified: the guest key's 5rpm limit returns 429 when exceeded.
+- `gateway/policies/tiers.yaml` documents the configurable per-tier defaults.
 
 ## Phase 6 — Monitoring & admin visibility (PARTIAL)
 - Monitoring stack up: `srge-caddy` (healthy), `srge-prometheus` (healthy), `srge-grafana` (healthy), `srge-redis` (healthy), `srge-control-api` (healthy, port 8010), `srge-node-exporter` (up).
