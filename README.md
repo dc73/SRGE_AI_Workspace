@@ -20,6 +20,12 @@ LiteLLM (virtual keys, per-tier rpm/tpm/max-parallel)
 vLLM (qwen38) → Qwen3.8-27B (NVFP4, 200k context)
 ```
 
+> **Note:** The archived per-user OpenCode host binary (`deploy/opencode`,
+> ~175 MB) is kept locally on the Spark but is not committed — it exceeds
+> GitHub's 100 MB per-file limit. The current stack builds OpenCode from the
+> install script inside the workspace image, so the binary is a legacy artifact
+> from the archived approach (see `archived-opencode-approach` branch).
+
 ## What's in the repo
 
 | Path | Purpose |
