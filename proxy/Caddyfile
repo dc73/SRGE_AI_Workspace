@@ -1,0 +1,39 @@
+# SRGE edge proxy (Caddy v2) — single edge port 8080, Tailscale-only HTTPS.
+# No public ports; all services bind to 127.0.0.1.
+
+:8080 {
+	# SRGE portal landing page
+	handle / {
+		root * /srv/portal
+		file_server
+	}
+
+	# Coder web UI
+	handle /coder {
+		uri strip_prefix /coder
+		reverse_proxy http://127.0.0.1:8081
+	}
+
+	# LiteLLM API + UI
+	handle /litellm {
+		uri strip_prefix /litellm
+		reverse_proxy http://127.0.0.1:4000
+	}
+
+	# Open WebUI
+	handle /webui {
+		uri strip_prefix /webui
+		reverse_proxy http://127.0.0.1:3080
+	}
+
+	# Grafana
+	handle /grafana {
+		uri strip_prefix /grafana
+		reverse_proxy http://127.0.0.1:3000
+	}
+
+	# Health endpoint
+	handle /healthz {
+		respond "ok" 200
+	}
+}

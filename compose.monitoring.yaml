@@ -1,0 +1,19 @@
+# SRGE AI Workspace — monitoring add-on compose (Phase 1/6).
+# Extend the base stack with monitoring-only services. Kept separate so the
+# base stack can run without the monitoring stack.
+#
+# Validate together:
+#   docker compose -f compose.yaml -f compose.monitoring.yaml config
+
+name: srge-ai-workspace
+
+services:
+  # Phase 6 will add per-user usage and richer GPU dashboards here.
+  # Keep this file valid by defining at least one monitoring extension.
+  node-exporter:
+    image: prom/node-exporter:v1.8.1
+    container_name: srge-node-exporter
+    restart: unless-stopped
+    networks: [monitoring]
+    ports:
+      - "127.0.0.1:9100:9100"

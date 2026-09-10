@@ -1,0 +1,14 @@
+# LiteLLM configuration for SRGE AI Workspace
+# Routes user traffic to the existing vLLM Qwen3.8-27B endpoint.
+model_list:
+  - model_name: srge/qwen3.8-27b
+    litellm_params:
+      model: openai/qwen3.8-27b
+      api_base: http://qwen38:8000/v1
+      api_key: srge-vllm
+      max_tokens: 8192
+      max_input_tokens: 200000
+
+litellm_settings:
+  num_retries: 2
+  request_timeout: 300

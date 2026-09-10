@@ -1,0 +1,42 @@
+name: srge-dev
+description: "SRGE developer workspace (code-server + OpenCode CLI + Qwen via LiteLLM)"
+type: docker
+author: SRGE
+provisioners:
+  docker:
+    import:
+      - image: ubuntu:24.04
+    dockerfile: |
+      FROM ubuntu:24.04
+      ENV DEBIAN_FRONTEND=noninteractive
+      RUN apt-get update && apt-get install -y \
+        ca-certificates curl git python3 python3-pip build-essential \
+        && rm -rf /var/lib/apt/lists/*
+      # code-server (browser-based VS Code)
+      RUN apt-get install -y snapd 2>/dev/null || true
+      RUN curl -fsSL https://code-server.dev/install.sh | sh
+      # OpenCode CLI (native binary)
+      RUN curl -fsSL https://opencode.ai/install | bash
+      # ROS 2 dev tools (optional, lightweight)
+      RUN apt-get install -y ros2-desktop-minimal 2>/dev/null || true
+      # Pre-configure OpenCode to talk to Qwen through LiteLLM
+      RUN echo 'export OPENAI_BASE_URL="http://127.0.0.1:4000/v1"' >> /root/.bashrc
+    startup: |
+      # code-server on 0.0.0.0:8443 (or similar)
+      code-server --bind-addr 0.0.0.0:8443 &
+    runtime:
+      network: srge
+    publish:
+      - "8443:8443"
+    resources:
+      cpu: 2
+      memory: 4g
+      pids: 512
+    idle_timeout_minutes: 30
+    volume:
+      driver: local
+      name: srge-user-{user}
+      mount: /workspace
+options:
+  user:
+    key: srge_researcher_key

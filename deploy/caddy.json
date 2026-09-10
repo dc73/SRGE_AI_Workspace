@@ -26,7 +26,7 @@
 									"lb_policy": "round_robin",
 									"upstreams": [
 										{
-											"url": "http://srge-backend:8001"
+											"url": "http://172.19.0.1:8001"
 										}
 									],
 									"header": {
@@ -56,7 +56,7 @@
 									"lb_policy": "round_robin",
 									"upstreams": [
 										{
-											"url": "http://srge-backend:8001"
+											"url": "http://172.19.0.1:8001"
 										}
 									]
 								}
@@ -76,7 +76,7 @@
 									"lb_policy": "round_robin",
 									"upstreams": [
 										{
-											"url": "http://srge-backend:8001"
+											"url": "http://172.19.0.1:8001"
 										}
 									]
 								}
@@ -84,7 +84,22 @@
 						],
 						"match": [
 							{
-								"path": ["/user/*", "/admin/*", "/auth/*", "/healthz"]
+								"path": ["/user/*", "/admin/*", "/auth/*"]
+							}
+						]
+					},
+					{
+						"handle": [
+							{
+								"resp": {
+									"status_code": 200,
+									"body": "ok"
+								}
+							}
+						],
+						"match": [
+							{
+								"path": ["/healthz"]
 							}
 						]
 					}

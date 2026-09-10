@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SRGE AI Workspace</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a30;
+      --accent: #4f8cff;
+      --text: #e8edf7;
+      --muted: #9aa7c0;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      padding: 18px 28px;
+      background: var(--panel);
+      border-bottom: 1px solid #1f2a45;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: .3px;
+    }
+    header p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    main {
+      flex: 1;
+      padding: 32px 28px;
+      max-width: 1080px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid #1f2a45;
+      border-radius: 10px;
+      padding: 18px;
+    }
+    .card h2 { margin: 0 0 8px; font-size: 15px; color: var(--accent); }
+    .card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .card a { color: var(--accent); text-decoration: none; }
+    .card a:hover { text-decoration: underline; }
+    footer {
+      padding: 12px 28px;
+      color: var(--muted);
+      font-size: 12px;
+      border-top: 1px solid #1f2a45;
+      background: var(--panel);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>SRGE AI Workspace</h1>
+    <p>Embry-Riddle SRGE Lab — self-hosted, Tailscale-only access</p>
+  </header>
+  <main>
+    <div class="grid">
+      <div class="card">
+        <h2>Coder Workspaces</h2>
+        <p>Launch a per-user developer workspace (code-server + OpenCode + Qwen via LiteLLM). <a href="/coder/">Open Coder</a></p>
+      </div>
+      <div class="card">
+        <h2>Qwen Inference Gateway</h2>
+        <p>Controlled access to Qwen3.8-27B through the LiteLLM proxy with per-user virtual keys. <a href="/litellm/">Open LiteLLM UI</a></p>
+      </div>
+      <div class="card">
+        <h2>Monitoring</h2>
+        <p>GPU + service health dashboards. <a href="/grafana/">Open Grafana</a></p>
+      </div>
+      <div class="card">
+        <h2>Open WebUI</h2>
+        <p>Chat interface to Qwen via the gateway. <a href="/webui/">Open WebUI</a></p>
+      </div>
+    </div>
+  </main>
+  <footer>
+    SRGE AI Workspace · NVIDIA DGX Spark (aarch64) · Tailscale-only HTTPS
+  </footer>
+</body>
+</html>

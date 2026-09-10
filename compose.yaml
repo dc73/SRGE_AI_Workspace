@@ -1,0 +1,163 @@
+# SRGE AI Workspace — base compose (Phase 1 foundation).
+# New supporting services: Caddy (edge proxy), control-api (FastAPI health
+# aggregation), Redis (concurrency/queues). vLLM is managed separately (existing
+# working container) and will be placed on `inference-backend`.
+#
+# This file is validated with `docker compose config` without restarting the
+# currently working stack. It does NOT bring down qwen38 / srge-* / nextcloud.
+
+name: srge-ai-workspace
+
+# --- Networks (segmentation per DECISIONS D-003) ---
+networks:
+  edge:
+    name: srge-edge
+  workspace:
+    name: srge-workspace
+  inference-backend:
+    name: srge-inference
+  monitoring:
+    name: srge-monitoring
+  database:
+    name: srge-database
+  # Keep the existing shared network for the already-running stack.
+  srge:
+    external: true
+    name: srge
+
+volumes:
+  redis-data:
+  caddy-config:
+  control-api-data:
+  grafana-data:
+
+services:
+  # Caddy — the only application-facing reverse proxy.
+  caddy:
+    image: caddy:2.8.4
+    container_name: srge-caddy
+    restart: unless-stopped
+    networks: [edge, srge]
+    ports:
+      - "127.0.0.1:8080:8080"   # edge-facing; Tailscale Serve front-ends this
+    command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.srge", "--adapter", "caddyfile"]
+    volumes:
+      - ./proxy/Caddyfile:/etc/caddy/Caddyfile.srge:ro
+      - ./apps/portal:/srv/portal:ro
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Control API — FastAPI; health aggregation + SRGE-specific resource data only.
+  control-api:
+    build:
+      context: ./apps/control-api
+      dockerfile: Dockerfile
+    container_name: srge-control-api
+    restart: unless-stopped
+    networks: [edge, monitoring, srge]
+    ports:
+      - "127.0.0.1:8010:8001"
+    environment:
+      SRGE_VLLM_BASE_URL: http://qwen38:8000/v1
+      SRGE_PROMETHEUS_BASE_URL: http://prometheus:9400
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - control-api-data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; r=urllib.request.urlopen('http://localhost:8001/healthz'); sys.exit(0 if r.status==200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # Redis — concurrency controls, queues, temporary state.
+  redis:
+    image: redis:7-alpine
+    container_name: srge-redis
+    restart: unless-stopped
+    networks: [database, monitoring]
+    command: ["redis-server", "--maxmemory", "2gb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - redis-data:/data
+    # Not exposed to host (database network only).
+
+  # Prometheus — metrics collection (monitoring network, internal).
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: srge-prometheus
+    restart: unless-stopped
+    networks: [monitoring, srge]
+    ports:
+      - "127.0.0.1:9400:9090"   # loopback-bound; admin-only
+    volumes:
+      - ./monitoring/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yaml"
+      - "--storage.tsdb.retention=30d"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  # Grafana — administrator monitoring dashboards (loopback-bound, admin-only).
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: srge-grafana
+    restart: unless-stopped
+    networks: [monitoring]
+    ports:
+      - "127.0.0.1:3000:3000"   # admin-only, Tailscale-restricted later
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD_FILE: /run/secrets/grafana_admin_password
+      GF_ANALYTICS_REPORT_RENDERING: "false"
+    secrets:
+      - grafana_admin_password
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/health | grep -q \"ok\""]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+  # NVIDIA DCGM exporter — GPU metrics (monitoring network, scrapes host GPU).
+  # NOTE: requires the NVIDIA DCGM host engine (dcgm). Currently not installed
+  # on this DGX Spark, so the service is disabled (commented out). GPU metrics
+  # are provided by nvidia-smi + node-exporter instead.
+  # dcgm-exporter:
+  #   image: nvidia/dcgm-exporter:latest
+  #   container_name: srge-dcgm-exporter
+  #   restart: unless-stopped
+  #   networks: [monitoring]
+  #   cap_add:
+  #     - SYS_ADMIN
+  #   devices:
+  #     - /dev/nvidia0:/dev/nvidia0
+  #     - /dev/nvidiactl:/dev/nvidiactl
+  #   environment:
+  #     NVIDIA_GPUS: "0"
+  #   healthcheck:
+  #     test: ["CMD", "wget", "-qO-", "http://localhost:9402/metrics"]
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 5
+
+secrets:
+  grafana_admin_password:
+    file: ./monitoring/grafana/secrets/grafana_admin_password.txt

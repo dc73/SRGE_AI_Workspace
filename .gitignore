@@ -1,0 +1,17 @@
+# Secrets — never commit
+.env
+*.secret
+monitoring/grafana/secrets/*.txt
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# Local builds
+*.log

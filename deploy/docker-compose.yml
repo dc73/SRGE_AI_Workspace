@@ -1,29 +1,102 @@
-# SRGE AI Workspace - docker-compose (dev; prod uses Postgres/Redis)
+# SRGE AI Workspace - docker-compose (new architecture)
+# Stacks: LiteLLM gateway, Open WebUI, Coder, SRGE portal backend.
+# All internal services bind to the private `srge` Docker network or localhost.
+# Only the SRGE portal, Open WebUI and Coder are routed through Tailscale Serve.
 version: "3.8"
 
+networks:
+  default:
+    name: srge
+    external: true
+
 services:
-  srge-backend:
-    build: ./backend
-    container_name: srge-backend
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: srge-litellm
+    command: ["--config", "/config/litellm_config.yaml", "--port", "4000"]
+    ports:
+      - "127.0.0.1:4000:4000"
+    environment:
+      LITELLM_MASTER_KEY: "srge-litellm-master-key"
+      DATABASE_URL: "postgresql://coder:coder@srge-postgres:5432/litellm"
+      STORE_MODEL_IN_DB: "True"
+    volumes:
+      - ./litellm:/config
+      - litellm-data:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; r=urllib.request.urlopen('http://localhost:4000/health/liveliness'); sys.exit(0 if r.status==200 else 1)"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: srge-open-webui
+    ports:
+      - "127.0.0.1:3080:8080"
+    environment:
+      OPENAI_API_BASE_URL: "http://srge-litellm:4000/v1"
+      OPENAI_API_KEY: "srge-litellm-master-key"
+      WEBUI_SECRET_KEY: "srge-webui-secret"
+      DATA_DIR: "/app/backend/data"
+    volumes:
+      - open-webui:/app/backend/data
+    depends_on:
+      litellm:
+        condition: service_healthy
+
+  coder:
+    image: codercom/coder:1.44.6
+    container_name: srge-coder
+    ports:
+      - "127.0.0.1:8081:7080"
+    environment:
+      COTD_API_KEY: "srge-coder-admin"
+      DB_URL: "postgres://coder:coder@srge-postgres:5432/coder?sslmode=disable"
+      DB_EMBEDDED: ""
+      COTD_PRODUCTION: "true"
+    volumes:
+      - coder-data:/root/.coder
+      - ./coder-templates:/root/.coder/coder-templates:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16
+    container_name: srge-postgres
+    environment:
+      POSTGRES_USER: coder
+      POSTGRES_PASSWORD: coder
+      POSTGRES_DB: coder
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U coder -d litellm"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  srge-portal:
+    build: ./portal
+    container_name: srge-portal
     ports:
       - "8001:8001"
     environment:
-      SRGE_JWT_SECRET: "dev-secret-change-me"
-      SRGE_VLLM_BASE_URL: "http://qwen38:8000/v1"
-      SRGE_VLLM_API_KEY: ""
-      SRGE_DB: "/data/srge.db"
-      SRGE_OPENCODE_IMAGE: "opencode/opencode:latest"
-      SRGE_OPENCODE_PORT: "8080"
-    volumes:
-      - srge-data:/data
+      SRGE_VLLM_BASE_URL: "http://srge-litellm:4000/v1"
+      SRGE_PROMETHEUS_BASE_URL: "http://localhost:9400"
     depends_on:
-      - qwen38
-
-  # Optional admin observability (disabled by default per ADR 009)
-  # prometheus:
-  #   image: prom/prometheus:v3.14.0
-  # grafana:
-  #   image: grafana/grafana:13.2.1
+      litellm:
+        condition: service_healthy
 
 volumes:
-  srge-data:
+  open-webui:
+    external: true
+  litellm-data:
+  coder-data:
+  postgres-data:
