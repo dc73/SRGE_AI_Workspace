@@ -1,0 +1,95 @@
+{
+	"$schema": "https://caddyserver.com/docs/caddyfile.jsonschema.json",
+	":8080": {
+		"header": {
+			"Strict-Transport-Security": "max-age=31536000; includePreload",
+			"X-Content-Type-Options": "nosniff",
+			"X-Frame-Options": "DENY",
+			"Referrer-Policy": "strict-origin-when-cross-origin"
+		},
+		"request_body": {
+			"max_size": 10485760
+		},
+		"handlers": [
+			{
+				"handle": [
+					{
+						"handle": [
+							{
+								"uri": {
+									"rewrite": {
+										"regex": "^/doc(.*)$",
+										"to": "/doc{matches.regex}"
+									}
+								},
+								"reverse_proxy": {
+									"lb_policy": "round_robin",
+									"upstreams": [
+										{
+											"url": "http://srge-backend:8001"
+										}
+									],
+									"header": {
+										"X-Forwarded-Host": "{http.host}"
+									},
+									"sse": true
+								}
+							}
+						],
+						"match": [
+							{
+								"path": ["/doc"]
+							}
+						]
+					},
+					{
+						"handle": [
+							{
+								"uri": {
+									"rewrite": {
+										"regex": "^/v1/chat/completions(.*)$",
+										"to": "/v1/chat/completions{matches.regex}"
+									}
+								},
+								"reverse_proxy": {
+									"sse": true,
+									"lb_policy": "round_robin",
+									"upstreams": [
+										{
+											"url": "http://srge-backend:8001"
+										}
+									]
+								}
+							}
+						],
+						"match": [
+							{
+								"path": ["/v1/chat/completions"]
+							}
+						]
+					},
+					{
+						"handle": [
+							{
+								"reverse_proxy": {
+									"sse": true,
+									"lb_policy": "round_robin",
+									"upstreams": [
+										{
+											"url": "http://srge-backend:8001"
+										}
+									]
+								}
+							}
+						],
+						"match": [
+							{
+								"path": ["/user/*", "/admin/*", "/auth/*", "/healthz"]
+							}
+						]
+					}
+				]
+			}
+		]
+	}
+}

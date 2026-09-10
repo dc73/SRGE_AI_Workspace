@@ -1,0 +1,29 @@
+# SRGE AI Workspace - docker-compose (dev; prod uses Postgres/Redis)
+version: "3.8"
+
+services:
+  srge-backend:
+    build: ./backend
+    container_name: srge-backend
+    ports:
+      - "8001:8001"
+    environment:
+      SRGE_JWT_SECRET: "dev-secret-change-me"
+      SRGE_VLLM_BASE_URL: "http://qwen38:8000/v1"
+      SRGE_VLLM_API_KEY: ""
+      SRGE_DB: "/data/srge.db"
+      SRGE_OPENCODE_IMAGE: "opencode/opencode:latest"
+      SRGE_OPENCODE_PORT: "8080"
+    volumes:
+      - srge-data:/data
+    depends_on:
+      - qwen38
+
+  # Optional admin observability (disabled by default per ADR 009)
+  # prometheus:
+  #   image: prom/prometheus:v3.14.0
+  # grafana:
+  #   image: grafana/grafana:13.2.1
+
+volumes:
+  srge-data:
