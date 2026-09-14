@@ -14,7 +14,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 | 5 | Resource control & fair-use | DONE |
 | 6 | Monitoring & admin visibility | PARTIAL |
 | 7 | Tailscale-only remote access | PARTIAL |
-| 8 | Administration, backup, recovery | PENDING |
+| 8 | Administration, backup, recovery | PARTIAL |
 | 9 | Testing & production hardening | PENDING |
 
 ## Current live state (verified 2026-09-10)
@@ -92,6 +92,12 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - Repo: `OpencodeHost`. Branch `main` at `c4c14cf` ("Archive: OpenCode per-user runtime + SSE proxy approach (Phase 2/3)").
 - Untracked/modified: `deploy/coder-templates/`, `deploy/litellm/`, `deploy/postgres-init/`, `deploy/srge-dev.Dockerfile`, and modified `deploy/docker-compose.yml`.
 - No `git reset --hard` used; user changes preserved.
+
+## Phase 8 — Administration, backup, recovery (PARTIAL)
+- Created `scripts/backup.sh` (Postgres dumps of `coder` + `litellm` DBs + config/policy files) and `scripts/restore.sh` (restores both DBs + configs from a backup dir).
+- Backup tested: Postgres dumps (coder.dump ~480KB, litellm.dump ~239KB) + config files + manifest, written to `/tmp/srge-backup-<stamp>/`.
+- Daily cron added (03:00) running `backup.sh`, logging to `/var/log/srge-backup.log`.
+- Restore applies DB dumps via `pg_restore --clean --if-exists`; service restarts needed to apply.
 
 ## Phase 5 — Resource control & fair-use (DONE)
 - All 4 tier virtual keys now exist in LiteLLM (`LiteLLM_VerificationToken`):
