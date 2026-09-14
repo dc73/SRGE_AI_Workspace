@@ -37,7 +37,7 @@ services:
     image: caddy:2.8.4
     container_name: srge-caddy
     restart: unless-stopped
-    networks: [edge, srge]
+    networks: [edge, srge, monitoring]
     ports:
       - "127.0.0.1:8080:8080"   # edge-facing; Tailscale Serve front-ends this
     command: ["caddy", "run", "--config", "/etc/caddy/Caddyfile.srge", "--adapter", "caddyfile"]

@@ -8,28 +8,28 @@
 		file_server
 	}
 
-	# Coder web UI
+	# Coder web UI (container on srge network)
 	handle /coder {
 		uri strip_prefix /coder
-		reverse_proxy http://127.0.0.1:8081
+		reverse_proxy http://srge-coder:7080
 	}
 
-	# LiteLLM API + UI
+	# LiteLLM API + UI (container on srge network)
 	handle /litellm {
 		uri strip_prefix /litellm
-		reverse_proxy http://127.0.0.1:4000
+		reverse_proxy http://srge-litellm:4000
 	}
 
-	# Open WebUI
+	# Open WebUI (container on srge network)
 	handle /webui {
 		uri strip_prefix /webui
-		reverse_proxy http://127.0.0.1:3080
+		reverse_proxy http://srge-open-webui:8080
 	}
 
-	# Grafana
+	# Grafana (container on monitoring network; Caddy must reach it)
 	handle /grafana {
 		uri strip_prefix /grafana
-		reverse_proxy http://127.0.0.1:3000
+		reverse_proxy http://srge-grafana:3000
 	}
 
 	# Health endpoint

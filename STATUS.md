@@ -127,9 +127,10 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - Created `proxy/Caddyfile` (Caddy v2 edge proxy: portal 8082, Coder 8083, LiteLLM 8084, WebUI 8085, Grafana 8086).
 
 ## Phase 7 — Tailscale-only remote access (PARTIAL)
-- Tailscale connected (`spark-f0d1` 100.68.61.41); `tailscale serve status` → "No serve config".
-- `tailscale serve --bg <port>` requires the tailnet admin to enable Serve from the Tailscale admin console (not yet enabled).
-- Once enabled, configure Serve to front-end Coder (8081), LiteLLM (4000), and the portal for private HTTPS with no public exposure.
+- Tailscale connected (`spark-f0d1` 100.68.61.41); `tailscale serve status` → "No serve config" (Serve not enabled on the tailnet).
+- Caddy edge proxy (port 8080) now routes correctly: `/` (portal) + `/healthz` → 200; `/coder`, `/litellm`, `/webui` → 200; `/grafana` → 302 (login redirect).
+- Upstream fix: Caddyfile now proxies to container service names on the `srge` network (`srge-coder:7080`, `srge-litellm:4000`, `srge-open-webui:8080`) + `srge-grafana:3000` (Caddy added to the `monitoring` network).
+- Once Serve is enabled in the Tailscale admin console: `tailscale serve --bg 8080` to front-end the Caddy edge proxy with HTTPS on the tailnet (no public exposure).
 
 ## Phase 3 — Coder workspace MVP (PARTIAL)
 - Built `srge/srge-dev:local` workspace image (ARM64) with code-server + OpenCode CLI.
@@ -150,7 +151,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - LiteLLM `/metrics` returns 401 (needs the master key); the Prometheus `litellm` target is DOWN (http_headers not parseable in 2.55).
 - Coder v1.44.6 template registration route not yet identified; deferred to Phase 3 (use web UI/CLI).
 - Coder password hash scheme not confirmed (salted, not plain SHA-256); test-user login blocked.
-- Tailscale Serve not configured (Phase 7).
+- Tailscale Serve not yet configured (needs enabling in the Tailscale admin console); Caddy edge proxy (8080) is the single edge port Serve will front-end.
 - vLLM reachable directly on `srge` network (bypass risk) — to be isolated in Phase 1/2.
 
 ## Rollback point
