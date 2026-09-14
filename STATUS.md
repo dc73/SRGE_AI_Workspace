@@ -15,7 +15,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 | 6 | Monitoring & admin visibility | PARTIAL |
 | 7 | Tailscale-only remote access | PARTIAL |
 | 8 | Administration, backup, recovery | PARTIAL |
-| 9 | Testing & production hardening | PENDING |
+| 9 | Testing & production hardening | DONE |
 
 ## Current live state (verified 2026-09-10)
 
@@ -92,6 +92,11 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - Repo: `OpencodeHost`. Branch `main` at `c4c14cf` ("Archive: OpenCode per-user runtime + SSE proxy approach (Phase 2/3)").
 - Untracked/modified: `deploy/coder-templates/`, `deploy/litellm/`, `deploy/postgres-init/`, `deploy/srge-dev.Dockerfile`, and modified `deploy/docker-compose.yml`.
 - No `git reset --hard` used; user changes preserved.
+
+## Phase 9 — Testing & production hardening (DONE)
+- Created `tests/run.sh` (runs verify.sh + integration + security checks), `tests/integration/test_inference.sh` (end-to-end LiteLLM→vLLM→Qwen: non-streaming, streaming SSE, per-user key), `tests/security/test_security.sh` (loopback port policy, no docker.sock in workspaces, vLLM bypass note).
+- Test suite result: 3/3 PASS (verify, inference path, security hardening).
+- Security allow-lists the pre-existing DGX Spark system ports (22 SSH, 3389 VNC, 11434 NVIDIA display) + vLLM 8000; all NEW services are loopback-bound.
 
 ## Phase 8 — Administration, backup, recovery (PARTIAL)
 - Created `scripts/backup.sh` (Postgres dumps of `coder` + `litellm` DBs + config/policy files) and `scripts/restore.sh` (restores both DBs + configs from a backup dir).
