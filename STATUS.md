@@ -103,6 +103,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - Backup tested: Postgres dumps (coder.dump ~480KB, litellm.dump ~239KB) + config files + manifest, written to `/tmp/srge-backup-<stamp>/`.
 - Daily cron added (03:00) running `backup.sh`, logging to `/var/log/srge-backup.log`.
 - Restore applies DB dumps via `pg_restore --clean --if-exists`; service restarts needed to apply.
+- DCGM host engine (nvidia-dcgm) not installed — requires root/sudo to install; GPU metrics currently via nvidia-smi (96% util, 27W, 62C).
 
 ## Phase 5 — Resource control & fair-use (DONE)
 - All 4 tier virtual keys now exist in LiteLLM (`LiteLLM_VerificationToken`):
@@ -120,7 +121,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - DCGM exporter disabled (NVIDIA DCGM host engine not installed); GPU metrics via nvidia-smi (96% util, 27W, 62C).
 - Grafana dashboards provisioned (SRGE folder); admin password in `monitoring/grafana/secrets/`.
 - Fixed: control-api `/metrics` now returns Prometheus text exposition format → Prometheus `control-api` target is UP.
-- Open items: litellm `/metrics` requires the master key (Prometheus 2.55 `http_headers` not parsing — target DOWN); install DCGM host engine for GPU metrics.
+- Open items: LiteLLM `/metrics` returns 404 even with the master key (metrics endpoint not exposed in this LiteLLM build) — the Prometheus `litellm` target stays DOWN until metrics are enabled; install DCGM host engine for GPU metrics.
 
 ## Phase 4 — SRGE-branded portal (PARTIAL)
 - Created `apps/portal/index.html` (SRGE-branded landing page with cards linking to Coder/LiteLLM/Grafana/WebUI).
@@ -150,7 +151,8 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - DCGM host engine not installed; GPU metrics currently via nvidia-smi.
 - LiteLLM `/metrics` returns 401 (needs the master key); the Prometheus `litellm` target is DOWN (http_headers not parseable in 2.55).
 - Coder v1.44.6 template registration route not yet identified; deferred to Phase 3 (use web UI/CLI).
-- Coder password hash scheme not confirmed (salted, not plain SHA-256); test-user login blocked.
+- Coder password hash scheme not confirmed (salted, not plain SHA-256); test-user login blocked (workspace launch via Coder web UI).
+- Template re-registered in Coder DB (`srge-dev.yaml`), Coder healthy, ARM64 workspace image (`srge/srge-dev:local`) ready for the Docker provisioner.
 - Tailscale Serve not yet configured (needs enabling in the Tailscale admin console); Caddy edge proxy (8080) is the single edge port Serve will front-end.
 - vLLM reachable directly on `srge` network (bypass risk) — to be isolated in Phase 1/2.
 
