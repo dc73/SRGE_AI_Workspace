@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 import httpx, os, json
 
 app = FastAPI(title="SRGE Control API")
@@ -34,14 +34,22 @@ def health():
     client.close()
     return results
 
-@app.get("/metrics")
+@app.get("/metrics", response_class=Response)
 def metrics():
-    """SRGE-specific resource data (GPU, inference queue, workspace usage)."""
-    data = {
-        "capacity_state": "Available",
-        "gpu_util_pct": None,
-        "inference_queue_depth": 0,
-        "active_workspaces": 0,
-        "note": "Populated by Phase 5/6 with live values."
-    }
-    return data
+    """SRGE-specific resource data in Prometheus text exposition format."""
+    lines = [
+        "# HELP srge_capacity_state 1 = available, 0 = exhausted",
+        "# TYPE srge_capacity_state gauge",
+        "srge_capacity_state 1",
+        "# HELP srge_gpu_util_pct GPU utilization percentage",
+        "# TYPE srge_gpu_util_pct gauge",
+        "srge_gpu_util_pct 0",
+        "# HELP srge_inference_queue_depth Current inference queue depth",
+        "# TYPE srge_inference_queue_depth gauge",
+        "srge_inference_queue_depth 0",
+        "# HELP srge_active_workspaces Number of active Coder workspaces",
+        "# TYPE srge_active_workspaces gauge",
+        "srge_active_workspaces 0",
+    ]
+    body = "\n".join(lines) + "\n"
+    return Response(content=body, media_type="text/plain; version=0.0.4")

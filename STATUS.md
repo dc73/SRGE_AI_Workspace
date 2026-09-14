@@ -119,7 +119,8 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - Prometheus targets: caddy/up, prometheus/up, vllm/up; litellm/down (401 — /metrics needs the master key), control-api/down (returns JSON, not Prometheus text format).
 - DCGM exporter disabled (NVIDIA DCGM host engine not installed); GPU metrics via nvidia-smi (96% util, 27W, 62C).
 - Grafana dashboards provisioned (SRGE folder); admin password in `monitoring/grafana/secrets/`.
-- Open items: add auth header to the litellm scrape job; convert control-api `/metrics` to Prometheus exposition format; install DCGM host engine for GPU metrics.
+- Fixed: control-api `/metrics` now returns Prometheus text exposition format → Prometheus `control-api` target is UP.
+- Open items: litellm `/metrics` requires the master key (Prometheus 2.55 `http_headers` not parsing — target DOWN); install DCGM host engine for GPU metrics.
 
 ## Phase 4 — SRGE-branded portal (PARTIAL)
 - Created `apps/portal/index.html` (SRGE-branded landing page with cards linking to Coder/LiteLLM/Grafana/WebUI).
@@ -146,6 +147,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - LiteLLM `/metrics` returns 401 (needs master key); the Prometheus litellm job is down.
 - control-api `/metrics` returns JSON, not Prometheus text format; the Prometheus control-api job is down.
 - DCGM host engine not installed; GPU metrics currently via nvidia-smi.
+- LiteLLM `/metrics` returns 401 (needs the master key); the Prometheus `litellm` target is DOWN (http_headers not parseable in 2.55).
 - Coder v1.44.6 template registration route not yet identified; deferred to Phase 3 (use web UI/CLI).
 - Coder password hash scheme not confirmed (salted, not plain SHA-256); test-user login blocked.
 - Tailscale Serve not configured (Phase 7).
