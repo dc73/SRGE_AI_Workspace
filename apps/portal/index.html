@@ -6,91 +6,191 @@
   <title>SRGE AI Workspace</title>
   <style>
     :root {
-      --bg: #0b1020;
-      --panel: #121a30;
-      --accent: #4f8cff;
-      --text: #e8edf7;
-      --muted: #9aa7c0;
+      --bg: #0a0e1a;
+      --panel: #111827;
+      --panel-2: #16203a;
+      --accent: #5b8cff;
+      --accent-2: #7c5bff;
+      --text: #eef2fb;
+      --muted: #8b98b8;
+      --ok: #2dd4a7;
+      --warn: #f5a623;
     }
     * { box-sizing: border-box; }
+    html, body { margin: 0; }
     body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-      background: var(--bg);
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      background:
+        radial-gradient(1200px 500px at 80% -10%, rgba(124,91,255,.18), transparent 60%),
+        radial-gradient(900px 480px at 10% 0%, rgba(91,140,255,.16), transparent 60%),
+        var(--bg);
       color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
     }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
     header {
-      padding: 18px 28px;
-      background: var(--panel);
-      border-bottom: 1px solid #1f2a45;
+      padding: 28px 32px 20px;
+      border-bottom: 1px solid #1d2946;
     }
-    header h1 {
-      margin: 0;
-      font-size: 20px;
-      letter-spacing: .3px;
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .logo {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      display: grid; place-items: center;
+      font-weight: 800; font-size: 18px; color: #fff;
+      box-shadow: 0 6px 18px rgba(91,140,255,.35);
     }
-    header p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: .2px; }
+    .sub { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+
     main {
       flex: 1;
-      padding: 32px 28px;
-      max-width: 1080px;
-      margin: 0 auto;
+      padding: 32px;
       width: 100%;
+      max-width: 1120px;
+      margin: 0 auto;
     }
+
+    .section-title {
+      font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
+      text-transform: uppercase; color: var(--muted);
+      margin: 0 0 14px;
+    }
+
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
       gap: 16px;
     }
     .card {
-      background: var(--panel);
-      border: 1px solid #1f2a45;
-      border-radius: 10px;
-      padding: 18px;
+      position: relative;
+      background: linear-gradient(180deg, var(--panel-2), var(--panel));
+      border: 1px solid #223052;
+      border-radius: 14px;
+      padding: 20px;
+      transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
     }
-    .card h2 { margin: 0 0 8px; font-size: 15px; color: var(--accent); }
-    .card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
-    .card a { color: var(--accent); text-decoration: none; }
-    .card a:hover { text-decoration: underline; }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+      box-shadow: 0 10px 30px rgba(91,140,255,.18);
+    }
+    .card .icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: grid; place-items: center;
+      background: rgba(91,140,255,.14);
+      color: var(--accent);
+      font-size: 18px; font-weight: 700;
+      margin-bottom: 14px;
+    }
+    .card h2 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+    .card p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+    .card .go {
+      display: inline-block; margin-top: 14px;
+      font-size: 13px; font-weight: 600; color: var(--accent);
+    }
+    .badge {
+      position: absolute; top: 16px; right: 16px;
+      font-size: 11px; font-weight: 700; letter-spacing: .5px;
+      padding: 3px 9px; border-radius: 999px;
+    }
+    .badge.ok { background: rgba(45,212,167,.15); color: var(--ok); }
+    .badge.info { background: rgba(91,140,255,.15); color: var(--accent); }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-top: 28px;
+    }
+    .stat {
+      background: var(--panel);
+      border: 1px solid #223052;
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+    .stat .k { color: var(--muted); font-size: 12px; }
+    .stat .v { font-size: 22px; font-weight: 700; margin-top: 4px; }
+
     footer {
-      padding: 12px 28px;
+      padding: 14px 32px;
       color: var(--muted);
       font-size: 12px;
-      border-top: 1px solid #1f2a45;
-      background: var(--panel);
+      border-top: 1px solid #1d2946;
+      background: rgba(17,24,39,.7);
+    }
+    @media (max-width: 560px) {
+      header, main, footer { padding-left: 18px; padding-right: 18px; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>SRGE AI Workspace</h1>
-    <p>Embry-Riddle SRGE Lab — self-hosted, Tailscale-only access</p>
+    <div class="brand">
+      <div class="logo">SR</div>
+      <div>
+        <h1>SRGE AI Workspace</h1>
+        <p class="sub">Embry-Riddle SRGE Lab &middot; NVIDIA DGX Spark (aarch64) &middot; Tailscale-only HTTPS</p>
+      </div>
+    </div>
   </header>
+
   <main>
+    <h3 class="section-title">Services</h3>
     <div class="grid">
       <div class="card">
+        <span class="badge ok">LIVE</span>
+        <div class="icon">C</div>
         <h2>Coder Workspaces</h2>
-        <p>Launch a per-user developer workspace (code-server + OpenCode + Qwen via LiteLLM). <a href="/coder/">Open Coder</a></p>
+        <p>Launch per-user developer workspaces (code-server + OpenCode + Qwen via LiteLLM).</p>
+        <a class="go" href="/coder/">Open Coder &rarr;</a>
       </div>
       <div class="card">
+        <span class="badge ok">LIVE</span>
+        <div class="icon">Q</div>
         <h2>Qwen Inference Gateway</h2>
-        <p>Controlled access to Qwen3.8-27B through the LiteLLM proxy with per-user virtual keys. <a href="/litellm/">Open LiteLLM UI</a></p>
+        <p>Controlled access to Qwen3.8-27B through LiteLLM with per-user virtual keys.</p>
+        <a class="go" href="/litellm/">Open LiteLLM &rarr;</a>
       </div>
       <div class="card">
+        <span class="badge ok">LIVE</span>
+        <div class="icon">G</div>
         <h2>Monitoring</h2>
-        <p>GPU + service health dashboards. <a href="/grafana/">Open Grafana</a></p>
+        <p>GPU + service health dashboards (Prometheus / Grafana).</p>
+        <a class="go" href="/grafana/">Open Grafana &rarr;</a>
       </div>
       <div class="card">
+        <span class="badge ok">LIVE</span>
+        <div class="icon">W</div>
         <h2>Open WebUI</h2>
-        <p>Chat interface to Qwen via the gateway. <a href="/webui/">Open WebUI</a></p>
+        <p>Chat interface to Qwen via the gateway.</p>
+        <a class="go" href="/webui/">Open WebUI &rarr;</a>
+      </div>
+    </div>
+
+    <h3 class="section-title" style="margin-top:32px">Cluster</h3>
+    <div class="stats">
+      <div class="stat">
+        <div class="k">GPU</div>
+        <div class="v">GB10 (aarch64)</div>
+      </div>
+      <div class="stat">
+        <div class="k">Model</div>
+        <div class="v">Qwen3.8-27B</div>
+      </div>
+      <div class="stat">
+        <div class="k">Access</div>
+        <div class="v">Tailscale-only</div>
       </div>
     </div>
   </main>
+
   <footer>
-    SRGE AI Workspace · NVIDIA DGX Spark (aarch64) · Tailscale-only HTTPS
+    SRGE AI Workspace &middot; self-hosted &middot; https://spark-f0d1.tail6c1096.ts.net
   </footer>
 </body>
 </html>

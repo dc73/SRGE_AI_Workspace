@@ -20,6 +20,7 @@ services:
       LITELLM_MASTER_KEY: "srge-litellm-master-key"
       DATABASE_URL: "postgresql://coder:coder@srge-postgres:5432/litellm"
       STORE_MODEL_IN_DB: "True"
+      LITELLM_UI_BASE_PATH: "/litellm"
     volumes:
       - ./litellm:/config
       - litellm-data:/data
@@ -42,6 +43,7 @@ services:
       OPENAI_API_KEY: "srge-litellm-master-key"
       WEBUI_SECRET_KEY: "srge-webui-secret"
       DATA_DIR: "/app/backend/data"
+      WEBUI_BASE_PATH: "/webui"
     volumes:
       - open-webui:/app/backend/data
     depends_on:
@@ -58,6 +60,7 @@ services:
       DB_URL: "postgres://coder:coder@srge-postgres:5432/coder?sslmode=disable"
       DB_EMBEDDED: ""
       COTD_PRODUCTION: "true"
+      CODY_APP_URL: "https://spark-f0d1.tail6c1096.ts.net/coder/"
     volumes:
       - coder-data:/root/.coder
       - ./coder-templates:/root/.coder/coder-templates:ro

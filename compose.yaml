@@ -121,6 +121,8 @@ services:
       GF_SECURITY_ADMIN_USER: admin
       GF_SECURITY_ADMIN_PASSWORD_FILE: /run/secrets/grafana_admin_password
       GF_ANALYTICS_REPORT_RENDERING: "false"
+      GF_SERVER_ROOT_URL: "https://spark-f0d1.tail6c1096.ts.net/grafana/"
+      GF_SERVER_SERVE_BASE_PATH: "/grafana"
     secrets:
       - grafana_admin_password
     volumes:
