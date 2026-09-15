@@ -13,7 +13,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 | 4 | SRGE-branded portal | PARTIAL |
 | 5 | Resource control & fair-use | DONE |
 | 6 | Monitoring & admin visibility | PARTIAL |
-| 7 | Tailscale-only remote access | PARTIAL |
+| 7 | Tailscale-only remote access | DONE |
 | 8 | Administration, backup, recovery | PARTIAL |
 | 9 | Testing & production hardening | DONE |
 
@@ -68,7 +68,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 
 ### Tailscale
 - Connected: `spark-f0d1` (100.68.61.41), `dcs-macbook-pro` active.
-- `tailscale serve status` → "No serve config" (Serve not yet configured).
+- **Serve is now enabled + running** (background): `https://spark-f0d1.tail6c1096.ts.net/` proxies `http://127.0.0.1:8080` (Caddy edge). Verified: `/` → 200, `/coder` → 200.
 
 ## Phase 2 — Controlled Qwen inference gateway (DONE)
 - LiteLLM (`srge-litellm`) deployed in front of vLLM; routes `srge/qwen3.8-27b` → `http://qwen38:8000/v1`.
@@ -98,12 +98,12 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - Test suite result: 3/3 PASS (verify, inference path, security hardening).
 - Security allow-lists the pre-existing DGX Spark system ports (22 SSH, 3389 VNC, 11434 NVIDIA display) + vLLM 8000; all NEW services are loopback-bound.
 
-## Phase 8 — Administration, backup, recovery (PARTIAL)
+## Phase 8 — Administration, backup, recovery (PARTIAL — DCGM blocked by package conflict)
 - Created `scripts/backup.sh` (Postgres dumps of `coder` + `litellm` DBs + config/policy files) and `scripts/restore.sh` (restores both DBs + configs from a backup dir).
 - Backup tested: Postgres dumps (coder.dump ~480KB, litellm.dump ~239KB) + config files + manifest, written to `/tmp/srge-backup-<stamp>/`.
 - Daily cron added (03:00) running `backup.sh`, logging to `/var/log/srge-backup.log`.
 - Restore applies DB dumps via `pg_restore --clean --if-exists`; service restarts needed to apply.
-- DCGM host engine (nvidia-dcgm) not installed — requires root/sudo to install; GPU metrics currently via nvidia-smi (96% util, 27W, 62C).
+- DCGM host engine: the apt package is `datacenter-gpu-manager` (not `nvidia-dcgm`); the install is blocked by glibc/libstdc++ conflicts (Breaks on libicu/libidn2/libpam/libstdc++6/libunistring/zlib). GPU metrics remain via nvidia-smi (96% util, 27W, 62C).
 
 ## Phase 5 — Resource control & fair-use (DONE)
 - All 4 tier virtual keys now exist in LiteLLM (`LiteLLM_VerificationToken`):
@@ -127,11 +127,11 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - Created `apps/portal/index.html` (SRGE-branded landing page with cards linking to Coder/LiteLLM/Grafana/WebUI).
 - Created `proxy/Caddyfile` (Caddy v2 edge proxy: portal 8082, Coder 8083, LiteLLM 8084, WebUI 8085, Grafana 8086).
 
-## Phase 7 — Tailscale-only remote access (PARTIAL)
-- Tailscale connected (`spark-f0d1` 100.68.61.41); `tailscale serve status` → "No serve config" (Serve not enabled on the tailnet).
-- Caddy edge proxy (port 8080) now routes correctly: `/` (portal) + `/healthz` → 200; `/coder`, `/litellm`, `/webui` → 200; `/grafana` → 302 (login redirect).
-- Upstream fix: Caddyfile now proxies to container service names on the `srge` network (`srge-coder:7080`, `srge-litellm:4000`, `srge-open-webui:8080`) + `srge-grafana:3000` (Caddy added to the `monitoring` network).
-- Once Serve is enabled in the Tailscale admin console: `tailscale serve --bg 8080` to front-end the Caddy edge proxy with HTTPS on the tailnet (no public exposure).
+## Phase 7 — Tailscale-only remote access (DONE)
+- Tailscale connected (`spark-f0d1` 100.68.61.41); **Serve enabled + running in the background**.
+- `https://spark-f0d1.tail6c1096.ts.net/` → `http://127.0.0.1:8080` (Caddy edge proxy). Verified `/` → 200, `/coder` → 200.
+- Caddy edge proxy (port 8080) routes: `/` (portal) + `/healthz` → 200; `/coder`, `/litellm`, `/webui` → 200; `/grafana` → 302 (login redirect).
+- Upstream fix: Caddyfile proxies to container service names on the `srge` network (`srge-coder:7080`, `srge-litellm:4000`, `srge-open-webui:8080`) + `srge-grafana:3000` (Caddy on the `monitoring` network).
 
 ## Phase 3 — Coder workspace MVP (PARTIAL)
 - Built `srge/srge-dev:local` workspace image (ARM64) with code-server + OpenCode CLI.
@@ -153,7 +153,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - Coder v1.44.6 template registration route not yet identified; deferred to Phase 3 (use web UI/CLI).
 - Coder password hash scheme not confirmed (salted, not plain SHA-256); test-user login blocked (workspace launch via Coder web UI).
 - Template re-registered in Coder DB (`srge-dev.yaml`), Coder healthy, ARM64 workspace image (`srge/srge-dev:local`) ready for the Docker provisioner.
-- Tailscale Serve not yet configured (needs enabling in the Tailscale admin console); Caddy edge proxy (8080) is the single edge port Serve will front-end.
+- Tailscale Serve **enabled + running** (background): `https://spark-f0d1.tail6c1096.ts.net/` → Caddy 8080 (verified 200 on `/` and `/coder`).
 - vLLM reachable directly on `srge` network (bypass risk) — to be isolated in Phase 1/2.
 
 ## Rollback point
