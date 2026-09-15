@@ -14,7 +14,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 | 5 | Resource control & fair-use | DONE |
 | 6 | Monitoring & admin visibility | PARTIAL |
 | 7 | Tailscale-only remote access | DONE |
-| 8 | Administration, backup, recovery | PARTIAL |
+| 8 | Administration, backup, recovery | SKIPPED (deferred — DCGM/nvtop) |
 | 9 | Testing & production hardening | DONE |
 
 ## Current live state (verified 2026-09-10)
@@ -98,7 +98,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - Test suite result: 3/3 PASS (verify, inference path, security hardening).
 - Security allow-lists the pre-existing DGX Spark system ports (22 SSH, 3389 VNC, 11434 NVIDIA display) + vLLM 8000; all NEW services are loopback-bound.
 
-## Phase 8 — Administration, backup, recovery (PARTIAL — DCGM blocked by package conflict)
+## Phase 8 — Administration, backup, recovery (SKIPPED — DCGM/nvtop deferred)
 - Created `scripts/backup.sh` (Postgres dumps of `coder` + `litellm` DBs + config/policy files) and `scripts/restore.sh` (restores both DBs + configs from a backup dir).
 - Backup tested: Postgres dumps (coder.dump ~480KB, litellm.dump ~239KB) + config files + manifest, written to `/tmp/srge-backup-<stamp>/`.
 - Daily cron added (03:00) running `backup.sh`, logging to `/var/log/srge-backup.log`.
