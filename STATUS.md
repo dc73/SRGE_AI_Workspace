@@ -151,7 +151,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 - DCGM host engine not installed; GPU metrics currently via nvidia-smi.
 - LiteLLM `/metrics` returns 401 (needs the master key); the Prometheus `litellm` target is DOWN (http_headers not parseable in 2.55).
 - Coder v1.44.6 template registration route not yet identified; deferred to Phase 3 (use web UI/CLI).
-- Coder password hash scheme not confirmed (salted, not plain SHA-256); test-user login blocked (workspace launch via Coder web UI).
+- Coder password hash scheme confirmed: **PBKDF2-SHA256** (65535 iters, 16-byte salt, 32-byte hash), stored in the `hashed_password` bytea column. The 1.44.6 format stores base64 of the raw hash (the admin hash is 44 bytes = base64 of 32-byte pbkdf2 output). Test-user login still requires the **Coder web UI** to set the password (the v0 API needs a browser session cookie).
 - Template re-registered in Coder DB (`srge-dev.yaml`), Coder healthy, ARM64 workspace image (`srge/srge-dev:local`) ready for the Docker provisioner.
 - Tailscale Serve **enabled + running** (background): `https://spark-f0d1.tail6c1096.ts.net/` → Caddy 8080 (verified 200 on `/` and `/coder`).
 - vLLM reachable directly on `srge` network (bypass risk) — to be isolated in Phase 1/2.
