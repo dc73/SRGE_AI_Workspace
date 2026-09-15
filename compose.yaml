@@ -137,9 +137,9 @@ services:
       retries: 5
 
   # NVIDIA DCGM exporter — GPU metrics (monitoring network, scrapes host GPU).
-  # NOTE: requires the NVIDIA DCGM host engine (dcgm). Currently not installed
-  # on this DGX Spark, so the service is disabled (commented out). GPU metrics
-  # are provided by nvidia-smi + node-exporter instead.
+  # Requires the NVIDIA DCGM host engine (nvidia-dcgm) to be installed on the
+  # host (needs root). Not installed on this DGX Spark, so the service is
+  # disabled. GPU metrics are provided by nvidia-smi + node-exporter instead.
   # dcgm-exporter:
   #   image: nvidia/dcgm-exporter:latest
   #   container_name: srge-dcgm-exporter
