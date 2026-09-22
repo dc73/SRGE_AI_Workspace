@@ -2,34 +2,47 @@
 # No public ports; all services bind to 127.0.0.1.
 
 :8080 {
-	# SRGE portal landing page
-	handle / {
-		root * /srv/portal
-		file_server
-	}
-
-	# Coder web UI (container on srge network)
+	# Coder web UI + its root-level assets (dashboard JS/CSS loaded from /)
 	handle /coder {
 		uri strip_prefix /coder
 		reverse_proxy http://srge-coder:7080
 	}
+	# Coder loads its JS/CSS from the root (e.g. /dashboard.xxx.js).
+	# Forward those root-level assets to Coder.
+	handle /dashboard.{js,css,map} {
+		reverse_proxy http://srge-coder:7080
+	}
 
-	# LiteLLM API + UI (container on srge network)
+	# LiteLLM API + UI
 	handle /litellm {
 		uri strip_prefix /litellm
 		reverse_proxy http://srge-litellm:4000
 	}
+	# LiteLLM's Swagger UI loads assets from /swagger/ (root-level).
+	handle /swagger/* {
+		reverse_proxy http://srge-litellm:4000
+	}
 
-	# Open WebUI (container on srge network)
+	# Open WebUI
 	handle /webui {
 		uri strip_prefix /webui
 		reverse_proxy http://srge-open-webui:8080
 	}
+	# WebUI loads its JS/CSS from /static/ (root-level).
+	handle /static/* {
+		reverse_proxy http://srge-open-webui:8080
+	}
 
-	# Grafana (container on monitoring network; Caddy must reach it)
+	# Grafana
 	handle /grafana {
 		uri strip_prefix /grafana
 		reverse_proxy http://srge-grafana:3000
+	}
+
+	# SRGE portal landing page (catch-all)
+	handle / {
+		root * /srv/portal
+		file_server
 	}
 
 	# Health endpoint
