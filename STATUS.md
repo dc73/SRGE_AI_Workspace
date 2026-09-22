@@ -14,7 +14,7 @@ Last updated: 2026-09-10 (Phases 0 + 1 — audit baseline + repo/compose foundat
 | 5 | Resource control & fair-use | DONE |
 | 6 | Monitoring & admin visibility | PARTIAL |
 | 7 | Tailscale-only remote access | DONE |
-| 8 | Administration, backup, recovery | SKIPPED (deferred — DCGM/nvtop) |
+| 8 | Administration, backup, recovery | IN PROGRESS (GPU metrics via nvidia-smi; DCGM/nvtop blocked by glibc conflict) |
 | 9 | Testing & production hardening | DONE |
 
 ## Current live state (verified 2026-09-10)
