@@ -2,19 +2,18 @@
 # No public ports; all services bind to 127.0.0.1.
 
 :8080 {
-	# Coder web UI + its root-level assets (dashboard JS/CSS loaded from /)
-	handle /coder {
+	# Coder web UI (wildcard match the /coder prefix)
+	handle /coder* {
 		uri strip_prefix /coder
 		reverse_proxy http://srge-coder:7080
 	}
 	# Coder loads its JS/CSS from the root (e.g. /dashboard.xxx.js).
-	# Forward those root-level assets to Coder.
 	handle /dashboard.{js,css,map} {
 		reverse_proxy http://srge-coder:7080
 	}
 
 	# LiteLLM API + UI
-	handle /litellm {
+	handle /litellm* {
 		uri strip_prefix /litellm
 		reverse_proxy http://srge-litellm:4000
 	}
@@ -24,7 +23,7 @@
 	}
 
 	# Open WebUI
-	handle /webui {
+	handle /webui* {
 		uri strip_prefix /webui
 		reverse_proxy http://srge-open-webui:8080
 	}
@@ -34,7 +33,7 @@
 	}
 
 	# Grafana
-	handle /grafana {
+	handle /grafana* {
 		uri strip_prefix /grafana
 		reverse_proxy http://srge-grafana:3000
 	}
